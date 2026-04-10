@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+
+actor "Student / Researcher" as User
+actor "Developer / Instructor" as Maintainer
+
+rectangle "IR Indexing Engine\n(Python CLI System)" as System {
+  usecase "Build configurable\nIR indexes" as UC1
+  usecase "Run boolean/ranked\nqueries" as UC2
+  usecase "Benchmark latency,\nthroughput, footprint" as UC3
+}
+
+cloud "Hugging Face Wikipedia\nDataset (downloaded locally)" as Dataset
+database "PostgreSQL" as PG
+folder "Local File System\n(Pickle indexes, CSV, charts)" as FS
+cloud "NLTK Resources\n(tokenizer, stopwords)" as NLTK
+
+User --> UC1
+User --> UC2
+User --> UC3
+Maintainer --> UC1
+Maintainer --> UC3
+
+UC1 --> Dataset : reads documents
+UC1 --> PG : writes/reads postings
+UC1 --> FS : writes/reads partial/final indexes
+UC1 --> NLTK : text normalization data
+UC2 --> PG : reads postings
+UC2 --> FS : reads pickle index
+UC2 --> NLTK : text normalization data
+UC3 --> FS : reads/writes evaluation artifacts
+
+@enduml

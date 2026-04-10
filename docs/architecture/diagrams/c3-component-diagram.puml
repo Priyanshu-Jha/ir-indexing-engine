@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+package "main.py" {
+  [generate_document_chunks]
+  [process_chunk_wrapper]
+  [main]
+}
+
+package "indexer.py" {
+  [Indexer]
+  [PositionalIndexer]
+  [TF_Indexer]
+  [TFIDF_Indexer]
+  [_add_skip_pointers]
+}
+
+package "query.py" {
+  [QueryParser]
+  [QueryEvaluator]
+}
+
+package "datastore.py" {
+  [PostgresDataStore]
+}
+
+package "evaluate.py" {
+  [EvaluationFramework]
+}
+
+package "core.py" {
+  [TextProcessor]
+}
+
+[main] --> [generate_document_chunks]
+[main] --> [process_chunk_wrapper]
+[main] --> [Indexer] : merge/load/save orchestration
+[main] --> [QueryEvaluator]
+[main] --> [EvaluationFramework]
+
+[process_chunk_wrapper] --> [PositionalIndexer]
+[process_chunk_wrapper] --> [TF_Indexer]
+
+[PositionalIndexer] -up-|> [Indexer]
+[TF_Indexer] -up-|> [Indexer]
+[TFIDF_Indexer] -up-|> [Indexer]
+[Indexer] --> [_add_skip_pointers]
+[Indexer] --> [TextProcessor]
+[Indexer] --> [PostgresDataStore]
+
+[QueryEvaluator] --> [QueryParser]
+[QueryEvaluator] --> [TextProcessor]
+[QueryEvaluator] --> [PostgresDataStore]
+
+[EvaluationFramework] --> [QueryParser]
+[EvaluationFramework] --> [QueryEvaluator]
+
+@enduml
