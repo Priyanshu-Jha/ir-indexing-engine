@@ -1,0 +1,43 @@
+@startuml
+left to right direction
+
+actor "Student / Researcher" as User
+
+rectangle "IR Indexing Engine" {
+  rectangle "CLI Orchestrator\n(main.py)" as Main
+  rectangle "Indexing Container\n(indexer.py + multiprocessing workers)" as Indexing
+  rectangle "Query Container\n(query.py)" as Query
+  rectangle "Evaluation Container\n(evaluate.py)" as Eval
+  rectangle "Visualization Container\n(visualize_results.py)" as Viz
+  rectangle "Text Processing Container\n(core.py)" as Text
+  rectangle "Datastore Adapter\n(datastore.py)" as DS
+}
+
+cloud "Wikipedia Dataset\n(local disk)" as Dataset
+database "PostgreSQL" as PG
+folder "Pickle Index Files\n(partial + final)" as Pickle
+folder "CSV/PNG Outputs" as Outputs
+cloud "NLTK Data" as NLTK
+
+User --> Main : runs pipeline
+Main --> Indexing : dispatch build configs/chunks
+Main --> Query : constructs evaluator
+Main --> Eval : runs benchmarks
+Main --> Viz : optional result plotting
+
+Indexing --> Text : normalize tokens
+Query --> Text : normalize query terms
+Text --> NLTK : load stopwords/tokenizer
+
+Indexing --> Pickle : save/load index blocks
+Indexing --> DS : merge to DB
+Query --> DS : fetch postings/doc freq
+DS --> PG : SQL operations
+
+Eval --> Query : execute TAAT/DAAT queries
+Eval --> Outputs : write evaluation CSV
+Viz --> Outputs : read CSV / write plots
+
+Indexing --> Dataset : read source documents
+
+@enduml
